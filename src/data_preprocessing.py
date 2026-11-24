@@ -3,38 +3,21 @@ from sklearn.preprocessing import MinMaxScaler,OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer,KNNImputer
 from sklearn.compose import ColumnTransformer
-from imblearn.over_sampling import SMOTE
-
-
-
+from imblearn.over_sampling import SMOTE , ADASYN 
 
 def data_preprocessing(df):
-
-    '''
-    * step1 : Drop the duplicate values present in the dataset.
-
-    * step2 : Understand descriptive stats abt the dataset and use feature engineering (Optional)**
-
-    * step3 : Split the dataset into independent and dependent columns i.e X and y.
-
-    * step4 : Split the independent and dependent columns into train(Seen) and test(Test) dataset.
-
-    * step5 : Segreggate the pipeline into numerical_pipeline and categorical_pipeline.
-
-    * step6 : Use imputation and Scaling Technique on numerical_pipeline
-
-    * step7: Use Imputation and Encoding Technique on categorical_pipeline
-
-    * step8 : Use columntransformer to concat numerical_pipeline and categorical_pipeline
-
-    * step9 : Fit the transformer on training and testing (On Seen and Unseen dataset).
-
-    * step10 :fit_resample the data so that target column balance  (in the case of classification)
-       
-    *step11 : Return the preprocessed X_tarin,X_tset,y_train,y_test 
-    
-    '''
-   
+    # Step1: Drop duplicated values
+    # Step2: Feature Engineering (Optional)**
+    # Step3: Split the dataset into Indepedent columns {X} and target column {y}
+    # Step4: Split the dataset into {train} Seen and {test} Unseen data
+    # Step5: Build EnE Pipeline for numerical and categorical 
+    # Step6: Build numerical pipeline with imputation and scaling
+    # Step7: Build categorical pipeline with imputation and encoding
+    # Step8: Concat numerical and categorical pipeline using ColumnTransformer
+    # Step9: fit transformer on train and test
+    # Step10: fit_resamlple the data so that target column balance
+    # Step11: Return the preprocess train and test : X_train,X_test,y_train,y_test
+    #-------------------------------------------------------------------------------------------
     # STEP 1 : Ensuring drop the duplicate values.
     df.drop_duplicates(inplace = True)
 
@@ -42,7 +25,7 @@ def data_preprocessing(df):
 
     # Step 3 : Split the dataset into  X and y.
 
-    X = df.drop(columns = ['customerID','Churn'])
+    X = df.drop(columns=['customerID','Churn'])    # Independent columns
     y = df['Churn']                   # Dependent column
 
     # Step 4 : Split the dataset into train(Seen) and test(Test) dataset.
@@ -53,7 +36,7 @@ def data_preprocessing(df):
 
     # Step 5 : Segregate the pipeline into numerical and categorical.
 
-        # Segregate the numerical and categorical columns.
+    # Segregate the numerical and categorical columns.
     numerical_col = X_train.select_dtypes(exclude = 'object').columns
     categorical_col = X_train.select_dtypes(include = 'object').columns
 
@@ -61,6 +44,7 @@ def data_preprocessing(df):
 
     numerical_pipeline = Pipeline([('Imputation',SimpleImputer(strategy = 'median')),
                                    ('Scaling',MinMaxScaler())])
+
     # Step 7 : Use categorical_pipeline
     
     categorical_pipeline = Pipeline([('Imputation',SimpleImputer(strategy = 'most_frequent')),
@@ -77,21 +61,19 @@ def data_preprocessing(df):
 
     # Step 9 : Fit the transformer on seen and unseen dataset.
 
-    X_train = transformer.fit_transform(X_train)   #Seen dataset
-    X_test = transformer.transform(X_test)         #Unseen dataset
-    
-    # Step 10 :
-    # fit_resample the data so that target column balance
+    X_train_transform = transformer.fit_transform(X_train)   #Seen dataset
+    X_test_transform = transformer.transform(X_test)         #Unseen dataset
+
+    #Step 10 : Use target column to balance technique
     '''
-    generally used for classification model
-    target column balance technique basically classified into two....
-    - over sampling technique
-    - under sampling technique
-    
+    * Generally used with clssification model
+    * Target column balance technique basically classified into two...
+       - over_sampling technique
+       - under_sampling technique
     '''
-    X_train,y_train = SMOTE().fit_resample(X_train,y_train)
+    smote = SMOTE(random_state=1)
+    X_train_resample,y_train_resample = SMOTE().fit_resample(X_train_transform,y_train)
 
     # Step 11 : Return the preprocess data value
 
-    return X_train, X_test, y_train, y_test
-    
+    return X_train_resample, X_test_transform, y_train_resample, y_test

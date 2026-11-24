@@ -8,4 +8,4 @@ imblearn
 flaml
 flaml[automl]
 mlflow
-st
+streamlit
